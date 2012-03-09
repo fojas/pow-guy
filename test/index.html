@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="lib/jasmine/jasmine.css">
+    <script type="text/javascript" src="lib/jasmine/jasmine.js"></script>
+    <script type="text/javascript" src="lib/jasmine/jasmine-html.js"></script>
+
+    <script src="../public/javascripts/jquery-1.7.1.js"></script>
+    <script src="../public/javascripts/underscore.js"></script>
+    <script src="../public/javascripts/backbone.js"></script>
+
+    <script src="../public/javascripts/hand.js"></script>
+    <script src="../public/javascripts/card.js"></script>
+    <script src="../public/javascripts/deck.js"></script>
+  
+    <script type="text/javascript" src="spec/hand_spec.js"></script>
+    <script type="text/javascript" src="spec/card_spec.js"></script>
+    <script type="text/javascript" src="spec/deck_spec.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      jasmine.getEnv().addReporter(new jasmine.TrivialReporter());
+      jasmine.getEnv().execute();
+    </script>
+  </body>
+</html>
