@@ -302,9 +302,13 @@
       return new Hand(remaining);
     },
     hasJoker : function(){
-      for(var i = this.cards.length; i--;){
-        if(this.cards[i].joker) return this.cards[i];
+      if(undefined === this._hasJoker){
+        this._hasJoker = null;
+        for(var i = this.cards.length; i--;){
+          if(this.cards[i].joker) this._hasJoker = this.cards[i];
+        }
       }
+      return this._hasJoker;
     },
     hasAce : function(){
       return _.any(this.cards,function(c){return c.joker || c.rank == "A"});
