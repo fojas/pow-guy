@@ -1,6 +1,6 @@
 describe("Pow Guy Deck", function(){
   it("should create a deck of cards",function(){
-    expect((new Deck).cards.length).toBe(52);
+    expect((new Deck).cards.length).toBe(53);
   });
 
   it("should shuffle the cards",function(){

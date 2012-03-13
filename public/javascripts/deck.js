@@ -11,9 +11,10 @@
           cards.push(new Card({rank:Card.ranks[j],suit:Card.suits[i]}));
         }
       }
+      cards.push(new Card); //joker
       return cards;
     },
-    dealCards : function(){
+    dealHand : function(){
       return new Hand(this.cards.slice(this.deckTop ,(this.deckTop += 7)));
     },
     toJSON : function(){
