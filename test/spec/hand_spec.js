@@ -139,15 +139,39 @@ describe("Pow Guy Hand", function(){
       );
       var twoPairs = hand.isTwoPairs();
       expect(twoPairs.length).toBe(4);
-      expect(twoPairs[0].rank).toBe("4");
-      expect(twoPairs[2].rank).toBe("A");
+      expect(_.pluck(twoPairs,'rank').join(",")).toBe("4,4,A,");
     });
 
     it("should know if it has three pairs", function(){
       var hand = new Hand(
         Card.buildCards([["A","S"],["9","S"],["K","C"],["9","H"],["K","D"],["A","D"]])
       );
-      
+      var threePairs = hand.isThreePairs();
+      expect(threePairs.length).toBe(6);
+      expect(_.pluck(threePairs,'rank').join(",")).toBe("9,9,K,K,A,A");
+    });
+
+    it("should know if it has three pairs with an ace-joker", function(){
+      var hand = new Hand(
+        Card.buildCards([["A","S"],["9","S"],["K","C"],["9","H"],["K","D"],[null,null]])
+      );
+      var threePairs = hand.isThreePairs();
+      expect(threePairs.length).toBe(6);
+      expect(_.pluck(threePairs,'rank').join(",")).toBe("9,9,K,K,A,");
+    });
+
+    it("should know if it doesnt have three pairs",function(){
+      var hand = new Hand(
+        Card.buildCards([["A","S"],["8","S"],["K","C"],["9","H"],["K","D"],["A","H"]])
+      );
+      expect(hand.isThreePairs().length).toBe(0);
+    });
+
+    it("should know if it doesnt have three pairs with a joker",function(){
+      var hand = new Hand(
+        Card.buildCards([["A","S"],["8","S"],["K","C"],["9","H"],["K","D"],[null,null]])
+      );
+      expect(hand.isThreePairs().length).toBe(0);
     });
 
     it("should know if it has two three of a kinds",function(){
@@ -563,6 +587,14 @@ describe("Pow Guy Hand", function(){
         expect(_.pluck(hand.highHand(),'rank').join(",")).toBe("Q,Q,5,5,A")
         expect(_.pluck(hand.lowHand(),'rank').join(",")).toBe("K,K")
       });
+
+      it("should put the highest pair in the low hand", function(){
+        var hand = new Hand(
+          Card.buildCards([[null,null],["Q","C"],["Q","H"],["A","S"],["5","H"],["5","S"],["K","D"]])
+        );
+        expect(_.pluck(hand.highHand(),'rank').join(",")).toBe("Q,Q,5,5,K")
+        expect(_.pluck(hand.lowHand(),'rank').join(",")).toBe("A,")
+      });
     });
 
     describe("Two Pairs", function(){
@@ -571,6 +603,14 @@ describe("Pow Guy Hand", function(){
           Card.buildCards([["A","S"],["8","C"],["Q","H"],["A","S"],["5","H"],["5","S"],["K","D"]])
         );
         expect(_.pluck(hand.highHand(),'rank').join(",")).toBe("A,A,8,Q,K")
+        expect(_.pluck(hand.lowHand(),'rank').join(",")).toBe("5,5")
+      });
+
+      it("should split if any pair is aces with joker", function(){
+        var hand = new Hand(
+          Card.buildCards([[null,null],["8","C"],["Q","H"],["A","S"],["5","H"],["5","S"],["K","D"]])
+        );
+        expect(_.pluck(hand.highHand(),'rank').join(",")).toBe("A,,8,Q,K")
         expect(_.pluck(hand.lowHand(),'rank').join(",")).toBe("5,5")
       });
 
@@ -678,25 +718,25 @@ describe("Pow Guy Hand", function(){
 
   describe("Sorting hands", function(){
       var handRanks = [
-        ["Five Aces",new Hand(Card.buildCards([["A","H"],["A","D"],["A","C"],["A","S"],[null,null]]))],
-        ["Royal Flush",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","D"],[null,null]]))],
-        ["Straight Flush",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","D"],["9","D"]]))],
-        ["Hi 4 of a Kind",new Hand(Card.buildCards([["K","C"],["K","D"],["K","S"],["K","H"],["9","D"]]))],
-        ["Lo 4 of a Kind",new Hand(Card.buildCards([["9","C"],["K","D"],["9","S"],["9","H"],["9","D"]]))],
-        ["Hi Full House",new Hand(Card.buildCards([["K","C"],["K","D"],["K","S"],["9","H"],["9","D"]]))],
-        ["Lo Full House",new Hand(Card.buildCards([["K","C"],["K","D"],["9","S"],["9","H"],["9","D"]]))],
-        ["Hi Flush",new Hand(Card.buildCards([[null,null],["K","D"],["Q","D"],["J","D"],["2","D"]]))],
-        ["Lo Flush",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","D"],["2","D"]]))],
-        ["Hi Straight",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","H"],["9","C"]]))],
-        ["Lo Straight",new Hand(Card.buildCards([["10","D"],["8","D"],["Q","D"],["J","H"],["9","C"]]))],
-        ["Hi 3 of a Kind",new Hand(Card.buildCards([["9","C"],["K","D"],["4","S"],["9","H"],["9","D"]]))],
-        ["Lo 3 of a Kind",new Hand(Card.buildCards([["9","C"],["K","D"],["3","S"],["9","H"],["9","D"]]))],
-        ["Hi 2 Pairs",new Hand(Card.buildCards([["K","C"],["K","D"],["4","S"],["9","H"],["9","D"]]))],
-        ["Lo 2 Pairs",new Hand(Card.buildCards([["K","C"],["K","D"],["3","S"],["9","H"],["9","D"]]))],
-        ["Hi Pair",new Hand(Card.buildCards([["7","C"],["K","D"],["4","S"],["9","H"],["9","D"]]))],
-        ["Lo Pair",new Hand(Card.buildCards([["6","C"],["K","D"],["4","S"],["9","H"],["9","D"]]))], 
-        ["Hi Pai Gow",new Hand(Card.buildCards([["7","C"],["K","D"],["4","S"],["J","H"],["9","D"]]))],
-        ["Low Pai Gow",new Hand(Card.buildCards([["2","C"],["K","D"],["4","S"],["J","H"],["9","D"]]))]
+        ["Five Aces",new Hand(Card.buildCards([["A","H"],["A","D"],["A","C"],["A","S"],[null,null]])),11],
+        ["Royal Flush",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","D"],[null,null]])),10],
+        ["Straight Flush",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","D"],["9","D"]])),9],
+        ["Hi 4 of a Kind",new Hand(Card.buildCards([["K","C"],["K","D"],["K","S"],["K","H"],["9","D"]])),8],
+        ["Lo 4 of a Kind",new Hand(Card.buildCards([["9","C"],["K","D"],["9","S"],["9","H"],["9","D"]])),8],
+        ["Hi Full House",new Hand(Card.buildCards([["K","C"],["K","D"],["K","S"],["9","H"],["9","D"]])),7],
+        ["Lo Full House",new Hand(Card.buildCards([["K","C"],["K","D"],["9","S"],["9","H"],["9","D"]])),7],
+        ["Hi Flush",new Hand(Card.buildCards([[null,null],["K","D"],["Q","D"],["J","D"],["2","D"]])),6],
+        ["Lo Flush",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","D"],["2","D"]])),6],
+        ["Hi Straight",new Hand(Card.buildCards([["10","D"],["K","D"],["Q","D"],["J","H"],["9","C"]])),5],
+        ["Lo Straight",new Hand(Card.buildCards([["10","D"],["8","D"],["Q","D"],["J","H"],["9","C"]])),5],
+        ["Hi 3 of a Kind",new Hand(Card.buildCards([["9","C"],["K","D"],["4","S"],["9","H"],["9","D"]])),4],
+        ["Lo 3 of a Kind",new Hand(Card.buildCards([["9","C"],["K","D"],["3","S"],["9","H"],["9","D"]])),4],
+        ["Hi 2 Pairs",new Hand(Card.buildCards([["K","C"],["K","D"],["4","S"],["9","H"],["9","D"]])),false],
+        ["Lo 2 Pairs",new Hand(Card.buildCards([["K","C"],["K","D"],["3","S"],["9","H"],["9","D"]])),false],
+        ["Hi Pair",new Hand(Card.buildCards([["7","C"],["K","D"],["4","S"],["9","H"],["9","D"]])),false],
+        ["Lo Pair",new Hand(Card.buildCards([["6","C"],["K","D"],["4","S"],["9","H"],["9","D"]])),false], 
+        ["Hi Pai Gow",new Hand(Card.buildCards([["7","C"],["K","D"],["4","S"],["J","H"],["9","D"]])),false],
+        ["Low Pai Gow",new Hand(Card.buildCards([["2","C"],["K","D"],["4","S"],["J","H"],["9","D"]])),false]
       ];
 
       for(var i = handRanks.length;i--;){
@@ -708,10 +748,18 @@ describe("Pow Guy Hand", function(){
         }
       }
       for(var i = handRanks.length;i--;){
+          var context = {i:i};
           it("should know that a "+ handRanks[i][0] + ' pushes a '+handRanks[i][0], $.proxy(function(){
             expect(Hand.sort(handRanks[this.i][1],handRanks[this.i][1])).toBe(0);
           },context));
+      }
 
+      for(var i = handRanks.length;i--;){
+          var context = {i:i};
+          it("should know that "+handRanks[i][0] + ' is a bonus',$.proxy(function(){
+            var bonus = handRanks[this.i][1].bonus();
+            expect(bonus).toBe(handRanks[this.i][2])
+          },context));
       }
   });
 });

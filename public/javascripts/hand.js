@@ -1,5 +1,15 @@
 !function($,window,undefined){
 
+  var HANDRANKS = {
+    11 : "Five Aces",
+    10 : "Royal Flush",
+    9 : "Straight Flush",
+    8 : "Four of a Kind",
+    7 : "Full House",
+    6 : "Flush",
+    5 : "Straight",
+    4 : "Three of a Kind"
+  }
   window.Hand = Backbone.Model.extend({
     initialize : function(cards){
       this.cards = cards.sort(Card.sort);
@@ -8,6 +18,9 @@
       this.hands = this.makeHands(cards);
       this._lowHand = this.hands[0];
       this._highHand = this.hands[1];
+    },
+    handName : function(){
+      return HANDRANKS[this.handScore()];
     },
     handScore : function(){
       if(!this._handScore){
@@ -41,6 +54,12 @@
         }
       }
       return this._handScore;
+    },
+    bonus : function(){
+      if(this.handScore() >= 4){
+        return this.handScore();
+      }
+      return false;
     },
     paiGowScore : function(){
       if(!this._paiGowScore){
@@ -247,7 +266,6 @@
         groupedPairs = _.chain(pairs).groupBy(function(card){
           return card.joker ? Card.getRankIndex("A") : card.rankIndex
         }).toArray().value();
-
       // low  : highest pair
       // high : two remaining pairs and remaining card
       return [
@@ -456,21 +474,21 @@
     },
     isMatchedCount : function(targetCount,excludeRank){
       var card,matchedCards,foundJoker,
-          uniqueRanks = _.uniq(_.map(this.cards,function(c){return c.rank}));
+          uniqueRanks = _.uniq(_.map(this.cards,function(c){return c.joker ? "A" : c.rank}));
 
-      if(excludeRank){
+      if(excludeRank && excludeRank.length){
         uniqueRanks = _.difference(uniqueRanks, excludeRank)
       }
 
       for(var i = 0, uLen = uniqueRanks.length;i < uLen; i++){
         card = uniqueRanks[i];
-        matchedCards = _.filter(this.cards, function(c){return c.rank == card});
+        matchedCards = _.filter(this.cards, function(c){return (c.joker ? "A" : c.rank) == card});
         if(matchedCards.length == targetCount){
           return matchedCards;
         }
       }
       // aces and a joker
-      if(foundJoker = this.hasJoker()){
+      if(foundJoker = this.hasJoker() && !_(excludeRank).include("A")){
         matchedCards = _.filter(this.cards, function(c){return c.rank == "A"});
         matchedCards.push(foundJoker);
         if(matchedCards.length == targetCount){
@@ -482,7 +500,7 @@
     isMatchedGroupedCount : function(targetCount, targetGroupCount){
       var groups = [], group, targetCount = targetCount * targetGroupCount;
       while((groups.length < targetCount) 
-            && (group = this.isMatchedCount(targetGroupCount,_.uniq(_.map(groups,function(g){return g.rank}))))
+            && (group = this.isMatchedCount(targetGroupCount,_.uniq(_.map(groups,function(g){return g.joker ? "A" : g.rank}))))
       ){
         groups = groups.concat(group);
         if(!group.length) break;
